@@ -1,0 +1,4 @@
+SLICES=2
+setenv PCONVERT PATH,HOME,SHELL
+setenv UNIXMODE /brUs
+

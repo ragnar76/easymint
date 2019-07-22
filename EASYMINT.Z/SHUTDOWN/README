@@ -1,0 +1,100 @@
+Latest changes are listed at the end of this file.
+
+This is my little shutdown program. It operates less or more the same 
+way as the Unix one does, with two significant exceptions:
+
+- the Unix-style shutdown writes wtmp, which shutdown.app does not.
+- the shutdown.app shuts down GEM applications, which Unix one does not.
+
+The first version of the shutdown.app did NOT use the AES 4.10/N.AES 
+shutdown protocol, but a simplified one. However, there were problems 
+with some programs (notably: CAB), which apparently do not like 
+AC_CLOSE message, when running as applications :-)
+
+Anyways, this version of shutdown.app closes GEM applications and 
+accessories using the AES 4.10 shutdown protocol. When a program 
+refuses the AP_TERM message, it is sent SIGTERM. If it does not help, 
+the situation gets improved with SIGKILL sent subsequently. Messages 
+indicating that the shutdown was explicitly rejected by an 
+application, are not (NOT!) taken into account.
+
+After this is done, an attempt is made to execute the command 
+"/bin/sh /etc/rc.shutdown", if such a file (/etc/rc.shutdown) is 
+known to exist. Here is an example of an rc.shutdown file:
+
+# rc.shutdown
+# Carry a random seed from shut-down to start-up
+# Save 512 bytes, which is the size of the entropy pool
+
+echo "Saving random seed..."
+random_seed=/var/run/random-seed
+dd if=/dev/urandom of=$random_seed count=1
+chmod 600 $random_seed
+exit 0
+
+# end of rc.shutdown
+
+Standard handles stdout and stderr are redirected to /dev/null while 
+executing the script, so you DON'T see any text output from it.
+
+After that, finally, Shutdown() is called.
+
+CAUTION: the "Cold boot" option uses the extended Shutdown() call 
+from FreeMiNT 1.15.4 and up. On older versions this will simply 
+perform a warm start.
+
+4.V.2000
+--------
+- buttons should now look better, when disabled.
+- fix in stdout/stderr redirection for the script execution.
+
+15.IV.2000
+----------
+- the stack size is encoded as a constant field within the 
+  shutdown.app executable. First, you find the NULL terminated string 
+  saying "½ Draco" (7 characters plus NULL). The next longword should 
+  contain $25091973. If so, the yet next longword contains the stack 
+  size.
+
+12.IV.2000
+----------
+- size optimization inside the linked library
+
+6.IV.2000
+---------
+- when the argument --nowait is passed in the command string, the 
+  default action is taken immediately, without an interaction with 
+  the user.
+- alternatively, the same argument can be passed as a value of 
+  $SDMASTER_ARGS.
+- this argument is only taken into account when the program is run 
+  with root privileges.
+
+31.III.2000
+-----------
+- if invoked without root privileges, it now disables all the options 
+  except the "Quit GEM".
+
+8.II.2000
+---------
+- smaller startup code linked
+
+26.I.2000
+---------
+- updates and bugfixes in the linked GEM library
+
+6.I.2000
+--------
+- on program termination the current settings will be written into 
+  the file $HOME/shutdown.inf and read from there at next program 
+  startup.
+- small changes relative to that (Pdomain(1) added and so on)
+- adjustments for current version of GEM libs linked (which changed 
+  by the time a bit :-))
+
+Have fun,
+
+Draco/YC
+
+draco@atari.org
+Warszawa, 31.III.2000
